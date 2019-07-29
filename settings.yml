@@ -1,0 +1,4 @@
+default_enabled:
+  default: false
+  description:
+    en: Enable Service Workers on Apple Devices

@@ -1,0 +1,6 @@
+{
+  "name": "Enable Service Workers on Apple Devices",
+  "about_url": "https://meta.discourse.org/t/discourse-enable-service-worker-on-apple-devices/104238",
+  "license_url": "https://github.com/discourse/discourse-enable-service-worker-on-apple-devices/blob/master/LICENSE.txt",
+  "component": true
+}

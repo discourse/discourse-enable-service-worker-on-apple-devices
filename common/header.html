@@ -1,0 +1,83 @@
+<script type="text/discourse-plugin" version="0.8">
+function getEnableServiceWorkersOnApple() {
+  let pref = localStorage.getItem("EnableServiceWorkersOnApple");
+  let result = settings.default_enabled;
+  if (pref !== null) {
+    result = pref === "true";
+  }
+  return result;
+}
+
+// technically we only want to amend current user here
+api.modifyClass("model:user", {
+  enableServiceWorkersOnApple: function() {
+    return getEnableServiceWorkersOnApple();
+  }.property()
+});
+
+api.modifyClass("controller:preferences/interface", {
+  actions: {
+    save() {
+      this._super();
+      if (getEnableServiceWorkersOnApple() != this.get("model.enableServiceWorkersOnApple")) {
+        Discourse.set("assetVersion", "forceRefresh");
+      }
+      localStorage.setItem(
+        "EnableServiceWorkersOnApple",
+        this.get("model.enableServiceWorkersOnApple").toString()
+      );
+    }
+  }
+});
+
+
+// from https://github.com/discourse/discourse/blob/master/app/assets/javascripts/discourse/initializers/register-service-worker.js.es6
+
+const isSecured =
+  document.location.protocol === "https:" ||
+  location.hostname === "localhost";
+
+const isSupported = isSecured && "serviceWorker" in navigator;
+
+if (isSupported) {
+
+  if (Discourse.ServiceWorkerURL && getEnableServiceWorkersOnApple()) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (let registration of registrations) {
+        if (
+          registration.active &&
+          !registration.active.scriptURL.includes(
+            Discourse.ServiceWorkerURL
+          )
+        ) {
+          this.unregister(registration);
+        }
+      }
+    });
+
+    navigator.serviceWorker
+      .register(`${Discourse.BaseUri}/${Discourse.ServiceWorkerURL}`)
+      .catch(error => {
+        // eslint-disable-next-line no-console
+        console.info(`Failed to register Service Worker: ${error}`);
+      });
+
+  } else {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (let registration of registrations) {
+        this.unregister(registration);
+      }
+    });
+  }
+}
+
+function unregister(registration) {
+  if (registration.scope.startsWith(Discourse.BaseUrl)) {
+    registration.unregister();
+  }
+}
+</script>
+
+<script type='text/x-handlebars' data-template-name='/connectors/user-preferences-interface/add-selector'>
+  {{preference-checkbox labelKey=(theme-prefix 'enable-service-worker-on-apple-devices') checked=model.enableServiceWorkersOnApple}} 
+</script>
