@@ -50,7 +50,7 @@ if (isSupported) {
             Discourse.ServiceWorkerURL
           )
         ) {
-          this.unregister(registration);
+          unregister(registration);
         }
       }
     });
@@ -65,7 +65,7 @@ if (isSupported) {
   } else {
     navigator.serviceWorker.getRegistrations().then(registrations => {
       for (let registration of registrations) {
-        this.unregister(registration);
+        unregister(registration);
       }
     });
   }
